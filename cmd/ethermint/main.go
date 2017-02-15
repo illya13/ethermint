@@ -37,11 +37,11 @@ var (
 )
 
 const (
-	clientIdentifier = "Ethermint" // Client identifier to advertise over the network
-	versionMajor     = 0           // Major version component of the current release
-	versionMinor     = 1           // Minor version component of the current release
-	versionPatch     = 0           // Patch version component of the current release
-	versionMeta      = "unstable"  // Version metadata to append to the version string
+	clientIdentifier = "Ethermint"				// Client identifier to advertise over the network
+	versionMajor     = 0					// Major version component of the current release
+	versionMinor     = 2					// Minor version component of the current release
+	versionPatch     = 0					// Patch version component of the current release
+	versionMeta      = "unstable-geth-1.5.9"		// Version metadata to append to the version string
 )
 
 var (
