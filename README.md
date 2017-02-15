@@ -26,7 +26,7 @@ You can build the `ethermint` executable by running `go install cmd/ethermint`. 
 ### Running
 #### Ethermint
 You need to init the genesis block for tendermint and geth. This part is still very much a work-in-progress, but it's possible to work with it now. 
-By running `./ethermint -datadir data init genesis.json`, both the tendermint genesis and geth genesis will be generated. The tendermint genesis resides in `~/.tendermint`. I recommend using the `genesis.json` that exists in the `dev` directory as it gives an initial balance to an address whose private key is in the `geth_data` folder. Its password is `123`.
+By running `./ethermint -datadir data init genesis.json`, both the tendermint genesis and geth genesis will be generated. The tendermint genesis resides in `~/.tendermint`. I recommend using the `genesis.json` that exists in the `docker` directory as it gives an initial balance to an address whose private key is in the `docker/keystore` folder. Its password is `1234`.
 
 #### Mining reward and validator management
 Ethermint implements hooks that can be customized for mining rewards and validator management. The default at this point is to not reward and not change the validator set. Example strategies can be found in the `strategies` folder.
