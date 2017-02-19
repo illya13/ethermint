@@ -1,0 +1,80 @@
+'use strict';
+
+const config = require('config');
+const ABI = require('./config/ABI.json');
+const Tx = require('ethereumjs-tx');
+const BN = require('bn.js');
+const Wallet = require('ethereumjs-wallet');
+const Web3 = require('web3');
+
+const _web3 = new Web3(new Web3.providers.HttpProvider(config.get('provider')));
+const _contract = _web3.eth.contract(ABI).at(config.get('address'));
+
+let nonces = {};
+const _start = new Date();
+const _wallet = getWallet();
+let _gasPrice = _web3.eth.gasPrice.toString(16);
+
+function getId(key) {
+  return _web3.sha3(key + Date.now());
+}
+
+function getWallet() {
+  return Wallet.fromV3(config.get('wallet'), config.get('password'));
+}
+
+
+function signAndSendRequest(wallet, gasPrice, request) {
+  const tx = new Tx(request.params[0]);
+
+  if (nonces[wallet.getAddressString()] === undefined) {
+    nonces[wallet.getAddressString()] = _web3.eth.getTransactionCount(wallet.getAddressString());
+  }
+
+  tx.nonce = new BN(nonces[wallet.getAddressString()], 10);
+  tx.gasPrice = new BN(gasPrice, 16);
+  tx.sign(wallet.getPrivateKey());
+
+  // console.log(tx.toJSON());
+
+  return new Promise((resolve, reject) => {
+    _web3.eth.sendRawTransaction('0x'+tx.serialize().toString('hex'), (err, res) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        // console.log(res);
+        nonces[wallet.getAddressString()]++;
+        resolve(res);
+      }
+    });
+  });
+}
+
+function request(i) {
+  if (i % 100 === 0) {
+    console.log(i, ((new Date() - _start) / 1000) + ' s');
+  }
+
+  const id = getId('product ' + i);
+  // console.log(id);
+
+  return signAndSendRequest(_wallet, _gasPrice,
+    _contract.registerProduct.request(id, 'product',
+      {from: _wallet.getAddressString(), gas: 150000}));
+}
+
+
+function run(index, n) {
+  return request(index).
+  then((res) => {
+    if (index < n) {
+      return run(index+1, n);
+    } else {
+      console.log(n, ((new Date() - _start) / 1000) + ' s');
+    }
+  })
+    .catch((e) => console.log(e));
+}
+
+run(1, config.get('n'));
