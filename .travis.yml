@@ -1,12 +1,23 @@
-language: go
+sudo: required
+services:
+  - docker
 
-matrix:
-  include:
-    - os: linux
-      dist: trusty
-      go: 1.7.5
-    - os: osx
-      go: 1.7.5
+env:
+  COMPOSE_VERSION: 1.11.1
+
+before_install:
+ - curl -L https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+ - chmod +x docker-compose
+ - sudo mv docker-compose /usr/local/bin
 
 script:
-  - go install ./cmd/ethermint
+  - docker build -t docker.ethermint -f .travis.dockerfile .
+  - cd test/contract
+  - docker build -t docker.contract .
+  - cd ../p2p
+  - docker-compose up -d gateway
+  - docker-compose run contract node deploy.js
+  - docker-compose run contract node main.js
+  - docker-compose run contract node verify.js
+  - docker-compose stop
+  - docker-compose rm -f
